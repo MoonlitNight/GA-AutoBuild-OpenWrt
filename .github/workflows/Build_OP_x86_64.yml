@@ -8,8 +8,7 @@
 name: Build_x86_64
 
 # Add a button to trigger the workflow
-on: 
-  repository_dispatch:
+on:
   workflow_dispatch:
 
 jobs:
@@ -35,57 +34,61 @@ jobs:
           /etc/php
         sudo -E apt-get -y purge azure-cli* docker* ghc* zulu* hhvm* llvm* firefox* google* dotnet* aspnetcore* powershell* openjdk* adoptopenjdk* mysql* php* mongodb* moby* snap* || true
         sudo -E apt-get update
-        sudo -E apt-get -y install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libfuse-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libpython3-dev libreadline-dev libssl-dev libtool lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 python3-pyelftools python3-setuptools qemu-utils rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev qemu-img
+        sudo -E apt-get -y install install build-essential clang flex bison g++ gawk cc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get clean
 
-    - name: Clone source code
+    - name: Clone OpenWrt Repository
       env: 
-        REPO_URL: https://github.com/coolsnowwolf/lede
-        REPO_BRANCH: master
+        REPO_URL: https://github.com/openwrt/openwrt.git
+        REPO_TAG: v23.05.2
       run: |
-        git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
+        git clone --depth 1 $REPO_URL openwrt
         cd openwrt
-        echo "src-git ssrp https://github.com/fw876/helloworld.git" >> ./feeds.conf.default
-        
+        git checkout $REPO_TAG
+
     - name: Update & Install feeds
       working-directory: ./openwrt
       run: |
         ./scripts/feeds update -a
         ./scripts/feeds install -a
-        ./scripts/feeds install -a
 
-    #- name: Import external feeds - passwall
-    #  working-directory: ./openwrt
-    #  run: |
-    #    git clone https://github.com/xiaorouji/openwrt-passwall.git package/lienol
-    #    git clone "your_github_link" package/"your_folder_name"      
+    - name: Clone Argon Theme
+      working-directory: ./openwrt
+      run: |
+        git clone https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
 
-    #- name: Import external feeds - JerryKuKu Argon
-    #  working-directory: ./openwrt
-    #  run: |
-    #    git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon-jerrykuku
+    - name: Clone Adguardhome
+      working-directory: ./openwrt
+      run: |
+        git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 
-    - name: Configuration Customization - Build_x86_64
+    - name: Clone Mosdns
+      working-directory: ./openwrt
+      run: |
+        rm -rf feeds/packages/net/v2ray-geodata
+        git clone https://github.com/sbwml/luci-app-mosdns.git -b v5 package/luci-app-mosdns
+        git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+
+    - name: Clone OpenClash
+      working-directory: ./openwrt
+      run: |
+        git clone https://github.com/vernesong/OpenClash.git
+        mv OpenClash/luci-app-openclash  package/luci-app-openclash
+        rm -rf ./OpenClash
+
+    - name: Configuration Customization
       env:
         CONFIG_FILE: 'x86_64.config'
       run: |
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x ./customize.sh && ./customize.sh
-        cd openwrt && make defconfig
-        
-    - name: Download package
-      working-directory: ./openwrt
-      run: |
-        make download -j$(nproc)
-        find dl -size -1024c -exec ls -l {} \;
-        find dl -size -1024c -exec rm -f {} \;
 
-    - name: Build firmware
+    - name: Build Firmware
       working-directory: ./openwrt
       run: |
         echo -e "$(nproc) thread build."
-        make -j$(nproc) V=s
+        make -j $(($(nproc)+1)) defconfig download clean world V=s
 
     - name : Upload artifact
       uses: actions/upload-artifact@master
