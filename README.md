@@ -1,10 +1,10 @@
-# AutoBuild-OpenWrt
+# GA-AutoBuild-OpenWrt
 [![LICENSE](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat&logo=github&label=LICENSE)](https://github.com/MoonlitNight/GA-AutoBuild-OpenWrt/blob/master/LICENSE)
 
 Build official OpenWrt firware [Official OpenWrt](https://github.com/openwrt/openwrt) using GitHub Actions  
-Hereby thank P3TERX for his amazing job: https://github.com/P3TERX/Actions-OpenWrt/
-Hereby thank KFERMercer for his amazing job: https://github.com/KFERMercer/OpenWrt-CI
-Hereby thank Esirplayground for his amazing job: https://github.com/esirplayground/AutoBuild-OpenWrt
+Hereby thank P3TERX for his amazing job: https://github.com/P3TERX/Actions-OpenWrt/ 
+Hereby thank KFERMercer for his amazing job: https://github.com/KFERMercer/OpenWrt-CI 
+Hereby thank Esirplayground for his amazing job: https://github.com/esirplayground/AutoBuild-OpenWrt 
 
 ## Usage
 
