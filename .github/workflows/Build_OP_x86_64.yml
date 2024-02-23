@@ -43,7 +43,7 @@ jobs:
         REPO_URL: https://github.com/openwrt/openwrt.git
         REPO_TAG: v23.05.2
       run: |
-        git clone --depth 1 $REPO_URL openwrt
+        git clone $REPO_URL openwrt
         cd openwrt
         git checkout $REPO_TAG
 
