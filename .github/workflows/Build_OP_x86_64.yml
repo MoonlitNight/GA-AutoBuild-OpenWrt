@@ -88,7 +88,7 @@ jobs:
       working-directory: ./openwrt
       run: |
         echo -e "$(nproc) thread build."
-        make -j $(($(nproc)+1)) defconfig download clean world V=s
+        make -j $(($(nproc)+1)) defconfig download clean world
 
     - name : Upload artifact
       uses: actions/upload-artifact@master
