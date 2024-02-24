@@ -99,9 +99,9 @@ jobs:
           openwrt/build_dir/toolchain*
           openwrt/staging_dir/toolchain*
           openwrt/tmp
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{REPO_TAG}}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.REPO_TAG }}
         restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-${{REPO_TAG}}
+          ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.REPO_TAG }}
 
     - name: Build Firmware
       working-directory: ./openwrt
