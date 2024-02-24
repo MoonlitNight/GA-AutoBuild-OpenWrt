@@ -15,6 +15,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      REPO_URL: https://github.com/openwrt/openwrt.git
+      REPO_TAG: v23.05.2
+      TARGET_CONFIG: 'x86_64'
+      DEBUG: true
+
     steps:
     - name: Checkout
       uses: actions/checkout@master
@@ -39,9 +45,6 @@ jobs:
         sudo -E apt-get clean
 
     - name: Clone OpenWrt Repository
-      env: 
-        REPO_URL: https://github.com/openwrt/openwrt.git
-        REPO_TAG: v23.05.2
       run: |
         git clone $REPO_URL openwrt
         cd openwrt
@@ -78,17 +81,41 @@ jobs:
         rm -rf ./OpenClash
 
     - name: Configuration Customization
-      env:
-        CONFIG_FILE: 'x86_64.config'
       run: |
+        CONFIG_FILE="$TARGET_CONFIG.config"
+        test -e $CONFIG_FILE && echo "The config file exists" || echo "The config file doesn't exists"
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x ./customize.sh && ./customize.sh
 
+    - name: Cache node modules
+      id: cache-npm
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-official-openwrt
+      with:
+        path: |
+          openwrt/feeds
+          openwrt/feeds.conf
+          openwrt/build_dir/toolchain*
+          openwrt/staging_dir/toolchain*
+          openwrt/tmp
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{REPO_TAG}}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-${{REPO_TAG}}
+
     - name: Build Firmware
       working-directory: ./openwrt
+      if: ${{ !DEBUG }}
       run: |
         echo -e "$(nproc) thread build."
         make -j $(($(nproc)+1)) defconfig download clean world
+
+    - name: Build Firmware - DEBUG
+      working-directory: ./openwrt
+      if: ${{ DEBUG }}
+      run: |
+        echo -e "build - DEBUG mode"
+        make -j1 V=s
 
     - name : Upload artifact
       uses: actions/upload-artifact@master
