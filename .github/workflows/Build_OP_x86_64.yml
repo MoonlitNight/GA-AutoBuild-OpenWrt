@@ -87,8 +87,8 @@ jobs:
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x ./customize.sh && ./customize.sh
 
-    - name: Cache node modules
-      id: cache-npm
+    - name: Cache Build
+      id: cache-build
       uses: actions/cache@v3
       env:
         cache-name: cache-official-openwrt
